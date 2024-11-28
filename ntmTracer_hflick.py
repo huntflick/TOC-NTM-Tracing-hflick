@@ -43,7 +43,7 @@ def ntmTrace(ntm, inString, maxDepth):
     delta = []
     for i, line in enumerate(ntm):  # parse ntm description
         if i == 0:
-            name = line
+            name = line[0]
         elif i > 0 and i < 4:
             pass
         elif i == 4:
@@ -72,11 +72,14 @@ def ntmTrace(ntm, inString, maxDepth):
         if not level:
             break
         for conf in level:
+            match = 0
             qcurr = conf[1]
+            if qcurr == reject:
+                pass
             leftHead = conf[0]
             rightHead = conf[2]
             if qcurr == reject:
-                pass
+                continue
 
             for rule in delta:
                 if qcurr == rule[0] and rightHead[0] == rule[1]:
@@ -103,19 +106,29 @@ def ntmTrace(ntm, inString, maxDepth):
                     newConf = [newLeft, newq, newRight]
                     newLevel.append(newConf)
 
+                    if newq == accept:
+                        accepted = 1
+                        break
+
+            if accepted:
+                break
+
             if not match:
-                newLeft = leftHead + rule[3]
+                newLeft = leftHead + rightHead[0]
                 newRight = rightHead[1:]
-                if not newRight:
+                if newRight == "":
                     newRight = "_"
                 newConf = [newLeft, reject, newRight]
                 newLevel.append(newConf)
 
         if newLevel:
             confTree.append(newLevel)
+        if accepted:
+            break
 
     for level in confTree:
         print(level)
+    
         
     return (name, start, accept, reject, delta)
 
@@ -130,7 +143,6 @@ def ntmTrace(ntm, inString, maxDepth):
     # need to implement depth and transition counters
     #   transition counter must reset and computation must start from beginning
     #           unless find some way to "remember"
-    #   
 
     
     
