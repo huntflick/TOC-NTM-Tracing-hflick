@@ -28,7 +28,6 @@ def main(arguments=sys.argv[1:]):
         print("Invalid number of arguments")
         exit(1)
     
-    
     while 1:
         output = ntmTrace(ntm, inString, maxDepth)
         print(output)
@@ -62,77 +61,179 @@ def ntmTrace(ntm, inString, maxDepth):
     rightHead = inString
     match = 0
     accepted = 0
+    rejPath = []
+    path = [["", qcurr, rightHead]]
 
-    confTree = [
-                [["", qcurr, rightHead]]    # ("", q1, "aaa"), qcurr = q1, char = a
-                ]
+    path, depth, txns = recCheck(path, rejPath, delta, accept, reject, depth, txns)
+
+    # confTree = [
+    #             [["", qcurr, rightHead]]
+    #             ]
     
-    for level in confTree:
-        newLevel = []
-        if not level:
-            break
-        for conf in level:
-            match = 0
-            qcurr = conf[1]
-            if qcurr == reject:
-                pass
-            leftHead = conf[0]
-            rightHead = conf[2]
-            if qcurr == reject:
-                continue
+    # for level in confTree:
+    #     newLevel = []
+    #     if not level:
+    #         break
+    #     for conf in level:
+    #         match = 0
+    #         qcurr = conf[1]
+    #         if qcurr == reject:
+    #             pass
+    #         leftHead = conf[0]
+    #         rightHead = conf[2]
+    #         if qcurr == reject:
+    #             continue
 
-            for rule in delta:
-                if qcurr == rule[0] and rightHead[0] == rule[1]:
-                    match = 1
-                    newq = rule[2]
+    #         for rule in delta:
+    #             if qcurr == rule[0] and rightHead[0] == rule[1]:
+    #                 match = 1
+    #                 newq = rule[2]
 
-                    if rule[4] == "R":
-                        newLeft = leftHead + rule[3]
-                        newRight = rightHead[1:]
-                        if not newRight:
-                            newRight = "_"
+    #                 if rule[4] == "R":
+    #                     newLeft = leftHead + rule[3]
+    #                     newRight = rightHead[1:]
+    #                     if not newRight:
+    #                         newRight = "_"
                     
-                    if rule[4] == "L":
-                        newRight = rule[3] + rightHead[1:]
-                        try:
-                            newRight = leftHead[-1] + newRight
-                        except IndexError:
-                            pass
-                        try:
-                            newLeft = leftHead[:-1]
-                        except IndexError:
-                            pass
+    #                 if rule[4] == "L":
+    #                     newRight = rule[3] + rightHead[1:]
+    #                     try:
+    #                         newRight = leftHead[-1] + newRight
+    #                     except IndexError:
+    #                         pass
+    #                     try:
+    #                         newLeft = leftHead[:-1]
+    #                     except IndexError:
+    #                         pass
 
-                    newConf = [newLeft, newq, newRight]
-                    newLevel.append(newConf)
+    #                 newConf = [newLeft, newq, newRight]
+    #                 newLevel.append(newConf)
 
-                    if newq == accept:
-                        accepted = 1
-                        break
+    #                 if newq == accept:
+    #                     accepted = 1
+    #                     break
 
-            if accepted:
-                break
+    #         if accepted:
+    #             break
 
-            if not match:
-                newLeft = leftHead + rightHead[0]
-                newRight = rightHead[1:]
-                if newRight == "":
-                    newRight = "_"
-                newConf = [newLeft, reject, newRight]
-                newLevel.append(newConf)
+    #         if not match:
+    #             newLeft = leftHead + rightHead[0]
+    #             newRight = rightHead[1:]
+    #             if newRight == "":
+    #                 newRight = "_"
+    #             newConf = [newLeft, reject, newRight]
+    #             newLevel.append(newConf)
 
-        if newLevel:
-            confTree.append(newLevel)
-        if accepted:
-            break
+    #     if newLevel:
+    #         confTree.append(newLevel)
+    #     if accepted:
+    #         break
 
-    for level in confTree:
-        print(level)
+    # for level in confTree:
+    #     print(level)
     
         
-    return (name, start, accept, reject, delta)
+    # return (name, start, accept, reject, delta)
 
     
+    
+def recCheck(path, rejPath, delta, accept, reject, depth, txns):
+    conf = path[-1]
+    print(conf)
+    match = 0
+    qcurr = conf[1]
+    leftHead = conf[0]
+    rightHead = conf[2]
+    newLevel = []
+
+    for rule in delta:
+        if qcurr == rule[0] and rightHead[0] == rule[1]:
+            match = 1
+            newq = rule[2]
+
+            if rule[4] == "R":
+                newLeft = leftHead + rule[3]
+                newRight = rightHead[1:]
+                if not newRight:
+                    newRight = "_"
+            
+            if rule[4] == "L":
+                newRight = rule[3] + rightHead[1:]
+                try:
+                    newRight = leftHead[-1] + newRight
+                except IndexError:
+                    pass
+                try:
+                    newLeft = leftHead[:-1]
+                except IndexError:
+                    pass
+
+            newConf = [newLeft, newq, newRight]
+            newLevel.append(newConf)
+
+            if newq == accept:
+                path.append(newConf)
+                return (path, depth, txns)
+    
+    if not match:
+        newLeft = leftHead + rightHead[0]
+        newRight = rightHead[1:]
+        if newRight == "":
+            newRight = "_"
+        newConf = [newLeft, reject, newRight]
+        newRej = path + newConf
+        if len(newRej) > len(rejPath):
+            rejPath = newRej
+        return (path, depth, txns)
+    
+    for conf in newLevel:
+        newPath = path + [conf]
+        print(conf)
+        print(newPath)
+        res = recCheck(newPath, rejPath, delta, accept, reject, depth, txns)
+        print(res)
+        path = res[0]
+        depth = res[1]
+        txns = res[2]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    # path = init
+    # rejPath = []
+
+    # for rule in delta:
+    #     eval
+    #     add to level
+    #     if acc:
+    #         return oath, depth, txns
+        
+    # if not match:
+    #     add reject to level
+    #     depth+=1
+    #     txns+=1
+    #     return path, depth, txns
+
+    # for conf in level:
+    #     newPath = path.append(conf)
+    #     recursiveCall(newPath)
+    
+
+
     # on execution, run code as above
     # modify to keep a "path" of current execution
     #   on accept, return this path
@@ -144,7 +245,10 @@ def ntmTrace(ntm, inString, maxDepth):
     #   transition counter must reset and computation must start from beginning
     #           unless find some way to "remember"
 
-    
+    #             head
+    #     branch      branch
+    # branch  leaf   leaf     branch
+    # leaf                        leaf
     
     
     
