@@ -139,7 +139,6 @@ def ntmTrace(ntm, inString, maxDepth):
     
 def recCheck(path, rejPath, delta, accept, reject, depth, txns):
     conf = path[-1]
-    print(conf)
     match = 0
     qcurr = conf[1]
     leftHead = conf[0]
@@ -173,7 +172,7 @@ def recCheck(path, rejPath, delta, accept, reject, depth, txns):
 
             if newq == accept:
                 path.append(newConf)
-                return (path, depth, txns)
+                return (path, rejPath, depth, txns)
     
     if not match:
         newLeft = leftHead + rightHead[0]
@@ -181,20 +180,19 @@ def recCheck(path, rejPath, delta, accept, reject, depth, txns):
         if newRight == "":
             newRight = "_"
         newConf = [newLeft, reject, newRight]
-        newRej = path + newConf
+        newRej = path + [newConf]
         if len(newRej) > len(rejPath):
             rejPath = newRej
-        return (path, depth, txns)
+        return (path, rejPath, depth, txns)
     
     for conf in newLevel:
         newPath = path + [conf]
-        print(conf)
-        print(newPath)
         res = recCheck(newPath, rejPath, delta, accept, reject, depth, txns)
         print(res)
         path = res[0]
-        depth = res[1]
-        txns = res[2]
+        rejPath = res[1]
+        depth = res[2]
+        txns = res[3]
 
 
 
