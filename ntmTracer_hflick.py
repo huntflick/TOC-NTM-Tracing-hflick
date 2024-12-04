@@ -10,6 +10,7 @@ def main(arguments=sys.argv[1:]):
         ntm = csv.reader(ntm)
     except IndexError:
         print("Invalid number of arguments")
+        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH")
         exit(1)
     except FileNotFoundError:
         print(f"NTM descriptor file {inFile} not found")
@@ -19,6 +20,7 @@ def main(arguments=sys.argv[1:]):
         inString = arguments[1]
     except IndexError:
         print("Invalid number of arguments")
+        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH")
         exit(1)
     
     try:
@@ -26,6 +28,7 @@ def main(arguments=sys.argv[1:]):
         arguments = arguments[3:]   # prepare for more input strings
     except IndexError:
         print("Invalid number of arguments")
+        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH")
         exit(1)
     
     while 1:
@@ -64,7 +67,11 @@ def ntmTrace(ntm, inString, maxDepth):
     rejPath = []
     path = [["", qcurr, rightHead]]
 
-    path, depth, txns = recCheck(path, rejPath, delta, accept, reject, depth, txns)
+    path, rejPath, depth, txns = recCheck(path, rejPath, delta, accept, reject, depth, txns)
+    print(path)
+    print(rejPath)
+    print(depth)
+    print(txns)
 
     # confTree = [
     #             [["", qcurr, rightHead]]
@@ -175,24 +182,31 @@ def recCheck(path, rejPath, delta, accept, reject, depth, txns):
                 return (path, rejPath, depth, txns)
     
     if not match:
-        newLeft = leftHead + rightHead[0]
-        newRight = rightHead[1:]
-        if newRight == "":
-            newRight = "_"
+        newRight = leftHead[-1] + rightHead
+        newLeft = leftHead[:-1]
         newConf = [newLeft, reject, newRight]
-        newRej = path + [newConf]
+        path.append(newConf)
+        newRej = path
         if len(newRej) > len(rejPath):
             rejPath = newRej
         return (path, rejPath, depth, txns)
     
+    print(f"new level {newLevel}")
     for conf in newLevel:
-        newPath = path + [conf]
+        print(conf)
+        if path[-1][1] == reject:
+            newPath = path[:-2] + [conf]
+        else:
+            newPath = path + [conf]
         res = recCheck(newPath, rejPath, delta, accept, reject, depth, txns)
-        print(res)
         path = res[0]
         rejPath = res[1]
         depth = res[2]
         txns = res[3]
+        if path[-1][1] == accept:
+            return (path, rejPath, depth, txns)
+    
+    return (path, rejPath, depth, txns)
 
 
 
