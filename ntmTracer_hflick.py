@@ -1,16 +1,14 @@
 import csv
 import sys
-import time
 
 
 def main(arguments=sys.argv[1:]):
     try:
         inFile = arguments[0]
         ntm = open(inFile, "r")
-        ntm = csv.reader(ntm)
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH")
+        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH $ADDITIONALSTRINGS")
         exit(1)
     except FileNotFoundError:
         print(f"NTM descriptor file {inFile} not found")
@@ -20,30 +18,31 @@ def main(arguments=sys.argv[1:]):
         inString = arguments[1]
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH")
+        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH $ADDITIONALSTRINGS")
         exit(1)
     
     try:
-        maxDepth = arguments[2]
+        maxTxns = int(arguments[2])
         arguments = arguments[3:]   # prepare for more input strings
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH")
+        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH $ADDITIONALSTRINGS")
         exit(1)
     
     while 1:
-        output = ntmTrace(ntm, inString, maxDepth)
-        print(output)
-        try:
+        ntmTrace(ntm, inString, maxTxns)   # call ntm parser
+        try:    # check for additional strings
             inString = arguments[0]
             arguments = arguments[1:]
         except IndexError:
             break
 
 
-def ntmTrace(ntm, inString, maxDepth):
-    delta = []
-    for i, line in enumerate(ntm):  # parse ntm description
+
+def ntmTrace(ntm, inString, maxTxns):
+    delta = []  # rule holder
+    data = csv.reader(ntm)
+    for i, line in enumerate(data):  # parse ntm description
         if i == 0:
             name = line[0]
         elif i > 0 and i < 4:
@@ -56,95 +55,43 @@ def ntmTrace(ntm, inString, maxDepth):
             reject = line[0]
         else:
             delta.append(line)
+    ntm.seek(0)     # reset file to top
 
-    depth = 0
     txns = 0
+    numConf = 0
+    numLevels = 0
     qcurr = start
-    leftHead = ""
-    rightHead = inString
-    match = 0
-    accepted = 0
+    rightHead = inString    # initialize string right of head
     rejPath = []
-    path = [["", qcurr, rightHead]]
+    path = [["", qcurr, rightHead]]     # initialize path
 
-    path, rejPath, depth, txns = recCheck(path, rejPath, delta, accept, reject, depth, txns)
-    print(path)
-    print(rejPath)
-    print(depth)
-    print(txns)
+    path, rejPath, numConf, txns, numLevels = recCheck(path, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLevels)
 
-    # confTree = [
-    #             [["", qcurr, rightHead]]
-    #             ]
-    
-    # for level in confTree:
-    #     newLevel = []
-    #     if not level:
-    #         break
-    #     for conf in level:
-    #         match = 0
-    #         qcurr = conf[1]
-    #         if qcurr == reject:
-    #             pass
-    #         leftHead = conf[0]
-    #         rightHead = conf[2]
-    #         if qcurr == reject:
-    #             continue
+    # printing results
+    print(f"NTM: {name}")
+    print(f"Input string: {inString}")
+    if path[-1] == "LIMIT EXCEEDED":
+        print(f"Execution stopped after {maxTxns} transitions")
+    elif path[-1][1] == accept:
+        depth = len(path)
+        print(f"Accepted in {depth-1} transitions")
+        for conf in path:
+            print(conf, end=' ')
+        print()
+        print(f"Explored {txns+1} configurations")      # total number of configs visited (including repeats and start)
+    else:
+        depth = len(rejPath)
+        print(f"Longest rejection path rejected in {depth-1} transitions")
+        for conf in rejPath:
+            print(conf, end=' ')
+        print()
+        print(f"Explored {txns+1} configurations")
+    print(f"Average nondeterminism: {numConf/numLevels}")   # total number of configs on each txn / number of tree levels
+    print()
 
-    #         for rule in delta:
-    #             if qcurr == rule[0] and rightHead[0] == rule[1]:
-    #                 match = 1
-    #                 newq = rule[2]
 
-    #                 if rule[4] == "R":
-    #                     newLeft = leftHead + rule[3]
-    #                     newRight = rightHead[1:]
-    #                     if not newRight:
-    #                         newRight = "_"
-                    
-    #                 if rule[4] == "L":
-    #                     newRight = rule[3] + rightHead[1:]
-    #                     try:
-    #                         newRight = leftHead[-1] + newRight
-    #                     except IndexError:
-    #                         pass
-    #                     try:
-    #                         newLeft = leftHead[:-1]
-    #                     except IndexError:
-    #                         pass
 
-    #                 newConf = [newLeft, newq, newRight]
-    #                 newLevel.append(newConf)
-
-    #                 if newq == accept:
-    #                     accepted = 1
-    #                     break
-
-    #         if accepted:
-    #             break
-
-    #         if not match:
-    #             newLeft = leftHead + rightHead[0]
-    #             newRight = rightHead[1:]
-    #             if newRight == "":
-    #                 newRight = "_"
-    #             newConf = [newLeft, reject, newRight]
-    #             newLevel.append(newConf)
-
-    #     if newLevel:
-    #         confTree.append(newLevel)
-    #     if accepted:
-    #         break
-
-    # for level in confTree:
-    #     print(level)
-    
-        
-    # return (name, start, accept, reject, delta)
-
-    
-    
-def recCheck(path, rejPath, delta, accept, reject, depth, txns):
+def recCheck(path, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLevels):  # recursive ntm checker
     conf = path[-1]
     match = 0
     qcurr = conf[1]
@@ -152,18 +99,23 @@ def recCheck(path, rejPath, delta, accept, reject, depth, txns):
     rightHead = conf[2]
     newLevel = []
 
-    for rule in delta:
+    if txns >= maxTxns:     # stop execution once max txns hit
+        path.append("LIMIT EXCEEDED")
+        return (path, rejPath, numConf, txns, numLevels)
+
+    for rule in delta:  # cycle through rules looking for a match
         if qcurr == rule[0] and rightHead[0] == rule[1]:
+            txns+= 1
             match = 1
             newq = rule[2]
 
-            if rule[4] == "R":
+            if rule[4] == "R":  # move head right
                 newLeft = leftHead + rule[3]
                 newRight = rightHead[1:]
                 if not newRight:
                     newRight = "_"
             
-            if rule[4] == "L":
+            if rule[4] == "L":  # move head left
                 newRight = rule[3] + rightHead[1:]
                 try:
                     newRight = leftHead[-1] + newRight
@@ -179,158 +131,39 @@ def recCheck(path, rejPath, delta, accept, reject, depth, txns):
 
             if newq == accept:
                 path.append(newConf)
-                return (path, rejPath, depth, txns)
+                return (path, rejPath, numConf, txns, numLevels)
     
-    if not match:
-        newRight = leftHead[-1] + rightHead
+    if not match:   # go to reject
+        txns+= 1
+        try:
+            newRight = leftHead[-1] + rightHead
+        except IndexError:
+            newRight = rightHead
         newLeft = leftHead[:-1]
         newConf = [newLeft, reject, newRight]
         path.append(newConf)
         newRej = path
-        if len(newRej) > len(rejPath):
+        if len(newRej) > len(rejPath):  # determine longer reject path
             rejPath = newRej
-        return (path, rejPath, depth, txns)
+        return (path, rejPath, numConf, txns, numLevels)
     
-    print(f"new level {newLevel}")
-    for conf in newLevel:
-        print(conf)
-        if path[-1][1] == reject:
+    numConf+= len(newLevel) - 1
+    numLevels+= 1
+    for conf in newLevel:   # pick next configuration to visit
+        if path[-1][1] == reject:   # "undo" last transitions to reject
             newPath = path[:-2] + [conf]
         else:
             newPath = path + [conf]
-        res = recCheck(newPath, rejPath, delta, accept, reject, depth, txns)
-        path = res[0]
+        res = recCheck(newPath, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLevels)
+        retPath = res[0]
         rejPath = res[1]
-        depth = res[2]
+        numConf = res[2]
         txns = res[3]
-        if path[-1][1] == accept:
-            return (path, rejPath, depth, txns)
+        if retPath[-1][1] == accept:    # return if accepted
+            return (retPath, rejPath, numConf, txns, numLevels)
     
-    return (path, rejPath, depth, txns)
+    return (retPath, rejPath, numConf, txns, numLevels)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-    # path = init
-    # rejPath = []
-
-    # for rule in delta:
-    #     eval
-    #     add to level
-    #     if acc:
-    #         return oath, depth, txns
-        
-    # if not match:
-    #     add reject to level
-    #     depth+=1
-    #     txns+=1
-    #     return path, depth, txns
-
-    # for conf in level:
-    #     newPath = path.append(conf)
-    #     recursiveCall(newPath)
-    
-
-
-    # on execution, run code as above
-    # modify to keep a "path" of current execution
-    #   on accept, return this path
-    #   on reject, check against longest found reject path
-    #       if no reject or new reject is longer, safe path
-    #       must reset transition counter
-
-    # need to implement depth and transition counters
-    #   transition counter must reset and computation must start from beginning
-    #           unless find some way to "remember"
-
-    #             head
-    #     branch      branch
-    # branch  leaf   leaf     branch
-    # leaf                        leaf
-    
-    
-    
-    
-    
-    # for level in confTree:
-
-    #     print(level)
-
-    #     if not level:
-    #         break
-    #     for conf in level:
-            
-    #         # print(conf)
-
-    #         match = 0
-    #         qcurr = conf[1]
-    #         leftHead = conf[0]
-    #         rightHead = conf[2]
-    #         if qcurr == reject:
-    #             pass
-    #         for rule in delta:
-    #             if qcurr == rule[0] and rightHead[0] == rule[1]:    # if curr state head char match
-    #                 match = 1
-    #                 #print(conf)
-    #                 #print(rule)
-    #                 newqcurr = rule[2]
-    #                 if rule[4] == "R":
-    #                     newleftHead = leftHead + rule[3]
-    #                     newrightHead = rightHead[1:]
-    #                     if not rightHead:
-    #                         newrightHead = "_"
-    #                 elif rule[4] == "L":
-    #                     newrightHead = rule[3] + rightHead[1:]
-    #                     try:
-    #                         newrightHead = leftHead[-1] + rightHead
-    #                     except IndexError:
-    #                         pass
-    #                     try:
-    #                         newleftHead = leftHead[:-1]
-    #                     except IndexError:
-    #                         pass
-    #                 newConf = [newleftHead, newqcurr, newrightHead]
-    #                 newLevel.append(newConf)
-    #                 if qcurr == accept:
-    #                     accepted = 1
-    #                     break
-
-    #             #print(confTree)
-                
-    #         if not match:
-    #             qcurr = reject
-    #             leftHead = leftHead + rule[3]
-    #             rightHead = rightHead[1:]
-    #             if not rightHead:
-    #                 rightHead = "_"
-    #             newConf = [leftHead, qcurr, rightHead]
-    #             newLevel.append(newConf)
-    #             break
-    #         if accepted:
-    #             break
-    #     if newLevel:        
-    #         confTree.append(newLevel)
-    #     if accepted:
-    #         break
-    # print(confTree)
-                        
-
-
-    # return (name, start, accept, reject, delta)
 
 
 if __name__ == '__main__':

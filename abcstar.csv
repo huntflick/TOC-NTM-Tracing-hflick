@@ -1,4 +1,4 @@
-a*b*c* Nondeterministic
+a*b*c*
 q0,q1,q2,q3,qacc,qrej
 a,b,c
 a,b,c,_
@@ -14,7 +14,7 @@ q1,b,q2,b,R
 q1,b,q3,b,R
 q2,c,q2,c,R
 q2,c,q3,c,R
-q3,_,qacc,_,R
+q3,_,qacc,_,L
 q0,b,q1,b,R
 q0,b,q2,b,R
 q0,b,q3,b,R
