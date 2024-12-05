@@ -1,0 +1,71 @@
+1
+2
+3
+4
+5
+6
+8
+NTM: a+
+Input string: aaaaaa
+Accepted in 7 transitions
+['', 'q1', 'aaaaaa'] ['a', 'q1', 'aaaaa'] ['aa', 'q1', 'aaaa'] ['aaa', 'q1', 'aaa'] ['aaaa', 'q1', 'aa'] ['aaaaa', 'q1', 'a'] ['aaaaaa', 'q2', '_'] ['aaaaa', 'qacc', 'a_'] 
+Explored 15 configurations
+Average nondeterminism: 1.75
+
+1
+2
+4
+NTM: a+
+Input string: aa
+Accepted in 3 transitions
+['', 'q1', 'aa'] ['a', 'q1', 'a'] ['aa', 'q2', '_'] ['a', 'qacc', 'a_'] 
+Explored 7 configurations
+Average nondeterminism: 1.5
+
+NTM: a+
+Input string: _
+Longest rejection path rejected in 1 transitions
+['', 'q1', '_'] ['', 'qrej', '_'] 
+Explored 2 configurations
+Average nondeterminism: 1.0
+
+1
+2
+3
+4
+5
+NTM: a+
+Input string: aaaaab
+Longest rejection path rejected in 6 transitions
+['', 'q1', 'aaaaab'] ['a', 'q1', 'aaaab'] ['aa', 'q1', 'aaab'] ['aaa', 'q1', 'aab'] ['aaaa', 'q1', 'ab'] ['aaaaa', 'q1', 'b'] ['aaaa', 'qrej', 'ab'] 
+Explored 17 configurations
+Average nondeterminism: 1.4545454545454546
+
+1
+3
+NTM: a+
+Input string: a
+Accepted in 2 transitions
+['', 'q1', 'a'] ['a', 'q2', '_'] ['', 'qacc', 'a_'] 
+Explored 5 configurations
+Average nondeterminism: 1.3333333333333333
+
+1
+2
+3
+5
+NTM: a+
+Input string: aaa
+Accepted in 4 transitions
+['', 'q1', 'aaa'] ['a', 'q1', 'aa'] ['aa', 'q1', 'a'] ['aaa', 'q2', '_'] ['aa', 'qacc', 'a_'] 
+Explored 9 configurations
+Average nondeterminism: 1.6
+
+1
+NTM: a+
+Input string: aba
+Longest rejection path rejected in 2 transitions
+['', 'q1', 'aba'] ['a', 'q1', 'ba'] ['', 'qrej', 'aba'] 
+Explored 5 configurations
+Average nondeterminism: 1.3333333333333333
+

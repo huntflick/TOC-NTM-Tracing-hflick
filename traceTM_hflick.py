@@ -128,12 +128,10 @@ def recCheck(path, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLe
 
             newConf = [newLeft, newq, newRight]
             newLevel.append(newConf)
-
-            if newq == accept:
-                path.append(newConf)
-                return (path, rejPath, numConf, txns, numLevels)
     
     if not match:   # go to reject
+        numConf+= 1
+        numLevels+= 1
         txns+= 1
         try:
             newRight = leftHead[-1] + rightHead
@@ -147,11 +145,16 @@ def recCheck(path, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLe
             rejPath = newRej
         return (path, rejPath, numConf, txns, numLevels)
     
-    numConf+= len(newLevel) - 1
+    numConf+= len(newLevel)
     numLevels+= 1
+    print(numLevels)
     for conf in newLevel:   # pick next configuration to visit
+        newq = conf[1]
         if path[-1][1] == reject:   # "undo" last transitions to reject
             newPath = path[:-2] + [conf]
+        elif newq == accept:
+            path.append(newConf)
+            return (path, rejPath, numConf, txns, numLevels)
         else:
             newPath = path + [conf]
         res = recCheck(newPath, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLevels)
@@ -159,6 +162,8 @@ def recCheck(path, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLe
         rejPath = res[1]
         numConf = res[2]
         txns = res[3]
+        newnumLevels = res[4]
+        numLevels = max(numLevels, newnumLevels)
         if retPath[-1][1] == accept:    # return if accepted
             return (retPath, rejPath, numConf, txns, numLevels)
     
