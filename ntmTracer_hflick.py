@@ -8,7 +8,7 @@ def main(arguments=sys.argv[1:]):
         ntm = open(inFile, "r")
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH $ADDITIONALSTRINGS")
+        print(f"Usage: python3 {sys.argv[0]} <TESTFILE>.csv <TESTSTRING> <MAXDEPTH> <ADDITIONALSTRINGS . . .>")
         exit(1)
     except FileNotFoundError:
         print(f"NTM descriptor file {inFile} not found")
@@ -18,7 +18,7 @@ def main(arguments=sys.argv[1:]):
         inString = arguments[1]
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH $ADDITIONALSTRINGS")
+        print(f"Usage: python3 {sys.argv[0]} <TESTFILE>.csv <TESTSTRING> <MAXDEPTH> <ADDITIONALSTRINGS . . .>")
         exit(1)
     
     try:
@@ -26,7 +26,7 @@ def main(arguments=sys.argv[1:]):
         arguments = arguments[3:]   # prepare for more input strings
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} $TESTFILE.csv $TESTSTRING $MAXDEPTH $ADDITIONALSTRINGS")
+        print(f"Usage: python3 {sys.argv[0]} <TESTFILE>.csv <TESTSTRING> <MAXDEPTH> <ADDITIONALSTRINGS . . .>")
         exit(1)
     
     while 1:
