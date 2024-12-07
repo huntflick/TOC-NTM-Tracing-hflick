@@ -18,28 +18,21 @@ def main(arguments=sys.argv[1:]):
         inString = arguments[1]
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} <TESTFILE>.csv <TESTSTRING> <MAXDEPTH> <ADDITIONALSTRINGS . . .>")
+        print(f"Usage: python3 {sys.argv[0]} <TESTFILE>.csv <TESTSTRING> <MAXTXNS> <ADDITIONALSTRINGS . . .>")
         exit(1)
     
     try:
-        maxTxns = int(arguments[2])
+        try:
+            maxTxns = int(arguments[2])
+        except ValueError:
+            print(f"Invalid maximum transition value {arguments[2]}. Value must be an integer")
+            exit(1)
         arguments = arguments[3:]   # prepare for more input strings
     except IndexError:
         print("Invalid number of arguments")
-        print(f"Usage: python3 {sys.argv[0]} <TESTFILE>.csv <TESTSTRING> <MAXDEPTH> <ADDITIONALSTRINGS . . .>")
+        print(f"Usage: python3 {sys.argv[0]} <TESTFILE>.csv <TESTSTRING> <MAXTXNS> <ADDITIONALSTRINGS . . .>")
         exit(1)
     
-    while 1:
-        ntmTrace(ntm, inString, maxTxns)   # call ntm parser
-        try:    # check for additional strings
-            inString = arguments[0]
-            arguments = arguments[1:]
-        except IndexError:
-            break
-
-
-
-def ntmTrace(ntm, inString, maxTxns):
     delta = []  # rule holder
     data = csv.reader(ntm)
     for i, line in enumerate(data):  # parse ntm description
@@ -55,8 +48,18 @@ def ntmTrace(ntm, inString, maxTxns):
             reject = line[0]
         else:
             delta.append(line)
-    ntm.seek(0)     # reset file to top
 
+    while 1:
+        ntmTrace(ntm, inString, maxTxns, delta, name, start, accept, reject)   # call ntm parser
+        try:    # check for additional strings
+            inString = arguments[0]
+            arguments = arguments[1:]
+        except IndexError:
+            break
+
+
+
+def ntmTrace(ntm, inString, maxTxns, delta, name, start, accept, reject):
     txns = 0
     numConf = 0
     numLevels = 0
@@ -147,7 +150,6 @@ def recCheck(path, rejPath, delta, accept, reject, maxTxns, txns, numConf, numLe
     
     numConf+= len(newLevel)
     numLevels+= 1
-    print(numLevels)
     for conf in newLevel:   # pick next configuration to visit
         newq = conf[1]
         if path[-1][1] == reject:   # "undo" last transitions to reject
