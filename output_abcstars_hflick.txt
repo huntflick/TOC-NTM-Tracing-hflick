@@ -1,0 +1,53 @@
+NTM: a*b*c*
+Input string: aaaa
+Accepted in 6 transitions
+['', 'q0', 'aaaa'] ['a', 'q0', 'aaa'] ['aa', 'q0', 'aa'] ['aaa', 'q0', 'a'] ['aaaa', 'q0', '_'] ['aaaa_', 'q3', '_'] ['aaaa', 'qacc', '__'] 
+Explored 19 configurations
+Average nondeterminism: 3.0
+
+NTM: a*b*c*
+Input string: a
+Accepted in 3 transitions
+['', 'q0', 'a'] ['a', 'q0', '_'] ['a_', 'q3', '_'] ['a', 'qacc', '__'] 
+Explored 7 configurations
+Average nondeterminism: 2.0
+
+NTM: a*b*c*
+Input string: _
+Accepted in 2 transitions
+['', 'q0', '_'] ['_', 'q3', '_'] ['', 'qacc', '__'] 
+Explored 3 configurations
+Average nondeterminism: 1.0
+
+NTM: a*b*c*
+Input string: aaab
+Accepted in 5 transitions
+['', 'q0', 'aaab'] ['a', 'q0', 'aab'] ['aa', 'q0', 'ab'] ['aaa', 'q0', 'b'] ['aaab', 'q3', '_'] ['aaa', 'qacc', 'b_'] 
+Explored 19 configurations
+Average nondeterminism: 2.5714285714285716
+
+NTM: a*b*c*
+Input string: abaa
+Longest rejection path rejected in 3 transitions
+['', 'q0', 'abaa'] ['a', 'q0', 'baa'] ['ab', 'q1', 'aa'] ['a', 'qrej', 'baa'] 
+Explored 19 configurations
+Average nondeterminism: 1.6363636363636365
+
+NTM: a*b*c*
+Input string: aaabbc
+Accepted in 7 transitions
+['', 'q0', 'aaabbc'] ['a', 'q0', 'aabbc'] ['aa', 'q0', 'abbc'] ['aaa', 'q0', 'bbc'] ['aaab', 'q1', 'bc'] ['aaabb', 'q2', 'c'] ['aaabbc', 'q3', '_'] ['aaabb', 'qacc', 'c_'] 
+Explored 24 configurations
+Average nondeterminism: 2.5555555555555554
+
+NTM: a*b*c*
+Input string: acc
+Accepted in 4 transitions
+['', 'q0', 'acc'] ['a', 'q0', 'cc'] ['ac', 'q2', 'c'] ['acc', 'q3', '_'] ['ac', 'qacc', 'c_'] 
+Explored 11 configurations
+Average nondeterminism: 2.0
+
+NTM: a*b*c*
+Input string: aaaaabbccb
+Execution stopped after 25 transitions
+Average nondeterminism: 3.7142857142857144
